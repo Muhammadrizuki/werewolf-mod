@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werewolf Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white font-sans flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-sm p-6 bg-gray-800 rounded-lg shadow-lg">
+        <!-- Player Setup -->
+        <div id="player-setup" class="text-center">
+            <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Set Up Players</h2>
+            <input id="player-count" type="number" min="3" max="20" placeholder="Number of players"
+                class="w-full text-gray-900 rounded-lg p-2 mb-4 text-lg">
+            <button onclick="setupPlayers()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Next</button>
+        </div>
+
+        <!-- Name Setup -->
+        <div id="name-setup" class="text-center hidden">
+            <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Enter Player Names</h2>
+            <div id="name-inputs" class="mb-4"></div>
+            <button onclick="assignRoles()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Next</button>
+        </div>
+
+        <!-- Role Setup -->
+        <div id="role-setup" class="text-center hidden">
+            <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Select Roles</h2>
+            <div id="role-options" class="space-y-2 mb-4"></div>
+            <button onclick="startNightPhase()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Start
+                Game</button>
+        </div>
+
+        <!-- Night Phase -->
+        <div id="night-phase" class="text-center hidden space-y-6">
+            <h2 class="text-3xl font-semibold text-yellow-400">Night Phase</h2>
+
+            <div id="werewolf-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Werewolf, choose a victim:</h3>
+                <select id="victim-select"
+                    class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+            </div>
+
+            <div id="seer-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Seer, choose a player:</h3>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <select id="seer-select"
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                    <button id="seer-reveal-button" onclick="revealRole()"
+                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">Reveal
+                        Role</button>
+                </div>
+                <div id="seer-result" class="mt-4 text-lg font-medium text-gray-200"></div>
+            </div>
+
+            <div id="guardian-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Guardian, choose a player:</h3>
+                <select id="guardian-select"
+                    class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+            </div>
+            <div id="blacksmith-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Blacksmith, use your power?</h3>
+                <button id="blacksmith-use-button" onclick="useBlacksmithPower()"
+                    class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                    Use
+                </button>
+            </div>
+
+            <button onclick="endNightPhase()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">End
+                Night Phase</button>
+        </div>
+
+
+        <!-- Day Phase -->
+        <div id="day-phase" class="text-center hidden">
+            <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Day Phase</h2>
+            <div id="vote-options" class="space-y-2 mb-4"></div>
+            <button onclick="endDayPhase()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">End
+                Day Phase</button>
+        </div>
+
+        <!-- Game Over -->
+        <div id="game-over" class="text-center hidden">
+            <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Game Over</h2>
+            <p id="game-result" class="text-lg font-medium mb-4"></p>
+            <button onclick="resetGame()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Play
+                Again</button>
+        </div>
+    </div>
+
+    <!-- Player Status -->
+    <div id="player-status" class="fixed top-0 right-0 p-4 text-sm text-gray-300">
+        <h2 class="font-medium mb-2">Player Status</h2>
+        <div id="status-list" class="space-y-1"></div>
+    </div>
+
+    <!-- Story -->
+    <div id="story" class="fixed top-0 left-0 p-4 text-sm text-gray-300">
+        <h3 class="text-xl font-semibold">Story</h3>
+        <div id="story-list" class="space-y-1"></div>
+    </div>
+
+    <!-- Reset Game -->
+    <div id="reset" class="fixed bottom-0 right-0 p-4 text-sm text-gray-300">
+        <button onclick="resetGame()"
+            class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">
+            Reset</button>
+    </div>
+
+    <script>
+        let players = [];
+        let roles = [];
+        let votes = {};
+        let deadPlayers = [];
+        let isGoodSideTurn = true;
+        let stories = [];
+        let blacksmithUsedPower = false; // Track if the Blacksmith has used their power
+
+        function setupPlayers() {
+            const playerCount = parseInt(document.getElementById('player-count').value, 10);
+
+            if (isNaN(playerCount) || playerCount < 3 || playerCount > 20) {
+                alert('Please enter a valid number of players between 3 and 20.');
+                return;
+            }
+
+            let nameInputsHtml = '';
+            for (let i = 0; i < playerCount; i++) {
+                nameInputsHtml += `<input id="player-name-${i}" type="text" placeholder="Player ${i + 1}" class="text-black rounded p-2 mb-2 w-full">`;
+            }
+
+            document.getElementById('name-inputs').innerHTML = nameInputsHtml;
+            document.getElementById('player-setup').classList.add('hidden');
+            document.getElementById('name-setup').classList.remove('hidden');
+        }
+
+        function assignRoles() {
+            const playerCount = document.getElementById('player-count').value;
+
+            for (let i = 0; i < playerCount; i++) {
+                const playerNameInput = document.getElementById(`player-name-${i}`);
+                const playerName = playerNameInput.value.trim() || `Player ${i + 1}`;
+                players.push({ name: playerName, role: '', alive: true });
+                votes[playerName] = null; // Initialize votes
+            }
+
+            let roleOptionsHtml = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="text-gray-200 font-semibold text-lg">Number of Werewolves:</label>
+                        <input id="werewolf-count" type="number" min="1" max="${Math.floor(playerCount / 2)}" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="text-gray-200 font-semibold text-lg">Number of Seers:</label>
+                        <input id="seer-count" type="number" min="1" max="1" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="text-gray-200 font-semibold text-lg">Number of Guardians:</label>
+                        <input id="guardian-count" type="number" min="0" max="${Math.floor(playerCount / 2)}" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="text-gray-200 font-semibold text-lg">Number of Blacksmiths:</label>
+                        <input id="blacksmith-count" type="number" min="0" max="1" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                `;
+
+            document.getElementById('role-options').innerHTML = roleOptionsHtml;
+            document.getElementById('name-setup').classList.add('hidden');
+            document.getElementById('role-setup').classList.remove('hidden');
+        }
+
+        function startNightPhase() {
+            const werewolfCount = parseInt(document.getElementById('werewolf-count').value);
+            const seerCount = parseInt(document.getElementById('seer-count').value);
+            const guardianCount = parseInt(document.getElementById('guardian-count').value, 10);
+            const blacksmithCount = parseInt(document.getElementById('blacksmith-count').value, 10);
+
+            // Assign roles randomly
+            const shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
+            for (let i = 0; i < werewolfCount; i++) {
+                shuffledPlayers[i].role = 'Werewolf';
+            }
+            for (let i = werewolfCount; i < werewolfCount + seerCount; i++) {
+                shuffledPlayers[i].role = 'Seer';
+            }
+            for (let i = werewolfCount + seerCount; i < werewolfCount + seerCount + guardianCount; i++) {
+                shuffledPlayers[i].role = 'Guardian';
+            }
+            for (let i = werewolfCount + seerCount + guardianCount; i < werewolfCount + seerCount + guardianCount + blacksmithCount; i++) {
+                shuffledPlayers[i].role = 'Blacksmith';
+            }
+            shuffledPlayers.slice(werewolfCount + seerCount + guardianCount + blacksmithCount).forEach(player => player.role = 'Villager');
+
+            // Update player status UI
+            updatePlayerStatus();
+
+            document.getElementById('role-setup').classList.add('hidden');
+            document.getElementById('night-phase').classList.remove('hidden');
+            showNightActivity();
+        }
+
+        function updatePlayerStatus() {
+            let statusListHtml = '';
+            players.forEach(player => {
+                statusListHtml += `
+                    <div class="${player.alive ? 'text-green-500' : 'text-red-500'}">
+                        ${player.name} (${player.role}) - ${player.alive ? 'Alive' : 'Dead'}
+                    </div>`;
+            });
+            document.getElementById('status-list').innerHTML = statusListHtml;
+        }
+
+        function showNightActivity() {
+            const werewolfAction = document.getElementById('werewolf-action');
+            const seerAction = document.getElementById('seer-action');
+            const guardianAction = document.getElementById('guardian-action');
+            const blacksmithAction = document.getElementById('blacksmith-action');
+
+            if (players.some(player => player.role === 'Werewolf' && player.alive)) {
+                let victimOptionsHtml = '';
+                players.forEach(player => {
+                    if (player.alive === true && player.role !== 'Werewolf') {
+                        victimOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+                document.getElementById('victim-select').innerHTML = victimOptionsHtml;
+                werewolfAction.classList.remove('hidden');
+            }
+
+            if (players.some(player => player.role === 'Seer' && player.alive)) {
+                let seerOptionsHtml = '';
+                players.forEach(player => {
+                    if (player.alive && player.role !== 'Seer') {
+                        seerOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+                document.getElementById('seer-select').innerHTML = seerOptionsHtml;
+                seerAction.classList.remove('hidden');
+            } else {
+                document.getElementById('seer-select').classList.add('hidden');
+                document.getElementById('seer-reveal-button').classList.add('hidden');
+                document.getElementById('seer-result').classList.add('hidden');
+            }
+
+            if (players.some(player => player.role === 'Guardian' && player.alive)) {
+                let guardianOptionsHtml = '';
+                players.forEach(player => {
+                    if (player.alive) {
+                        guardianOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+                document.getElementById('guardian-select').innerHTML = guardianOptionsHtml;
+                guardianAction.classList.remove('hidden');
+            } else {
+                document.getElementById('guardian-select').classList.add('hidden');
+            }
+
+            if (players.some(player => player.role === 'Blacksmith' && player.alive && !blacksmithUsedPower)) {
+                blacksmithAction.classList.remove('hidden');
+            }
+        }
+
+        function revealRole() {
+            const selectedPlayerName = document.getElementById('seer-select').value;
+            const selectedPlayer = players.find(player => player.name === selectedPlayerName);
+            const isGoodSide = selectedPlayer.role !== 'Werewolf';
+            document.getElementById('seer-result').textContent =
+                `${selectedPlayer.name} is on the ${isGoodSide ? 'Good' : 'Bad'} side.`;
+        }
+
+        function useBlacksmithPower() {
+            blacksmithUsedPower = true;
+            document.getElementById('blacksmith-use-button').disabled = true; // Disable the button
+            document.getElementById('blacksmith-use-button').classList.add('opacity-50', 'cursor-not-allowed'); // Add styling to indicate it's disabled
+            document.getElementById('blacksmith-use-button').classList.remove('hover:bg-yellow-500'); // Remove hover effect
+        }
+
+        function endNightPhase() {
+            const victimName = document.getElementById('victim-select').value;
+            const victim = players.find(player => player.name === victimName);
+            const guardianProtection = document.getElementById('guardian-select').value;
+
+            // Check if Blacksmith use his ability
+            if (blacksmithUsedPower) {
+                stories.push(`The Blacksmith used iron dust, preventing the Werewolves from attacking tonight.`);
+                console.log(`Blacksmith use it power.`);
+            }
+            // Check if Guardian protected the victim
+            else if (guardianProtection === victimName) {
+                stories.push(`The Guardian protected ${victimName}, who was attacked by the Werewolves.`);
+                console.log(`Guardian protected ${victimName}.`);
+            } else {
+                if (victim) victim.alive = false;
+                stories.push(`${victimName}, was attacked by the Werewolves.`);
+                console.log(`Werewolves killed ${victimName}.`);
+            }
+
+            // Update player status UI
+            updatePlayerStatus();
+
+            document.getElementById('night-phase').classList.add('hidden');
+            document.getElementById('day-phase').classList.remove('hidden');
+
+            isGoodSideTurn = false;
+            displayStories();
+            startDayPhase()
+        }
+
+        function startDayPhase() {
+            showDayVotingOptions();
+            document.getElementById('day-phase').classList.remove('hidden');
+        }
+
+
+        function showDayVotingOptions() {
+            let voteOptionsHtml = `
+                <h3 class="text-xl font-semibold">Vote to eliminate a player:</h3>
+                    <select name="vote" id="vote-select" class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="" disabled selected>Select a player to vote</option>`;
+
+            players.forEach(player => {
+                if (player.alive) {
+                    voteOptionsHtml += `
+                        <option value="${player.name}">${player.name}</option>`;
+                }
+            });
+
+            voteOptionsHtml += `</select>`;
+
+
+            document.getElementById('vote-options').innerHTML = voteOptionsHtml;
+        }
+
+        function endDayPhase() {
+            const voteSelect = document.getElementById('vote-select');
+            const votedPlayer = voteSelect.value;
+
+            if (votedPlayer) {
+                const player = players.find(p => p.name === votedPlayer);
+                if (player) {
+                    player.alive = false;
+                    stories.push(`${votedPlayer} was voted out by the villagers.`);
+                    console.log(`${player.name} has been eliminated.`);
+                }
+            } else {
+                stories.push(`No one die because of the voted Skipped`);
+                console.log(`Vote skipped`);
+            }
+
+            // Update player status UI
+            updatePlayerStatus();
+            blacksmithUsedPower = false;
+
+            checkGameOver();
+            document.getElementById('day-phase').classList.add('hidden');
+            if (!isGameOver()) document.getElementById('night-phase').classList.remove('hidden');
+            displayStories();
+            showNightActivity();
+        }
+
+        function displayStories() {
+            let storiesHtml = '';
+            stories.forEach((story, index) => {
+                if (index % 2 == 0) {
+                    storiesHtml += `<p class="text-white text-sm">Night ${Math.ceil((index + 1) / 2)}: ${story}</p>`;
+                } else {
+                    storiesHtml += `<p class="text-white text-sm">Day ${Math.ceil(index / 2)}: ${story}</p>`;
+                }
+            });
+            document.getElementById('story-list').innerHTML = storiesHtml;
+        }
+
+        function isGameOver() {
+            const aliveWerewolves = players.filter(player => player.role === 'Werewolf' && player.alive).length;
+            const aliveVillagers = players.filter(player => player.role !== 'Werewolf' && player.alive).length;
+
+            if (aliveWerewolves === 0) {
+                document.getElementById('game-result').textContent = 'Villagers win!';
+                return true;
+            } else if (aliveWerewolves >= aliveVillagers) {
+                document.getElementById('game-result').textContent = 'Werewolves win!';
+                return true;
+            }
+
+            return false;
+        }
+
+        function checkGameOver() {
+            if (isGameOver()) {
+                document.getElementById('day-phase').classList.add('hidden');
+                document.getElementById('night-phase').classList.add('hidden');
+                document.getElementById('game-over').classList.remove('hidden');
+            }
+        }
+
+        function resetGame() {
+            players = [];
+            roles = [];
+            deadPlayers = [];
+            stories = [];
+
+            displayStories()
+            updatePlayerStatus()
+
+            document.getElementById('player-setup').classList.remove('hidden');
+            document.getElementById('name-setup').classList.add('hidden');
+            document.getElementById('role-setup').classList.add('hidden');
+            document.getElementById('night-phase').classList.add('hidden');
+            document.getElementById('day-phase').classList.add('hidden');
+            document.getElementById('game-over').classList.add('hidden');
+
+        }
+    </script>
+</body>
+
+</html>

@@ -23,18 +23,19 @@
         <div id="name-setup" class="text-center hidden">
             <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Enter Player Names</h2>
             <div id="name-inputs" class="mb-4"></div>
-            <button onclick="assignRoles()"
+            <!-- <button onclick="assignRoles()" -->
+            <button onclick="startNightPhase()"
                 class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Next</button>
         </div>
 
-        <!-- Role Setup -->
+        <!-- Role Setup
         <div id="role-setup" class="text-center hidden">
             <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Select Roles</h2>
             <div id="role-options" class="space-y-2 mb-4"></div>
             <button onclick="startNightPhase()"
                 class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">Start
                 Game</button>
-        </div>
+        </div> -->
 
         <!-- Night Phase -->
         <div id="night-phase" class="text-center hidden space-y-6">
@@ -69,6 +70,12 @@
                     class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
                     Use
                 </button>
+            </div>
+
+            <div id="psycopath-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Psycopath, choose a victim:</h3>
+                <select id="psycopath-victim-select"
+                    class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
             </div>
 
             <button onclick="endNightPhase()"
@@ -134,7 +141,18 @@
 
             let nameInputsHtml = '';
             for (let i = 0; i < playerCount; i++) {
-                nameInputsHtml += `<input id="player-name-${i}" type="text" placeholder="Player ${i + 1}" class="text-black rounded p-2 mb-2 w-full">`;
+                nameInputsHtml += `
+                <div class="player-setup flex items-center space-x-4 mb-4">
+                    <input id="player-name-${i}" type="text" placeholder="Player ${i + 1}" class="text-black rounded p-2 w-1/2">
+                    <select id="player-role-${i}" class="text-black rounded p-2 w-1/2">
+                        <option value="Villager">Select Role</option>
+                        <option value="Werewolf">Werewolf</option>
+                        <option value="Seer">Seer</option>
+                        <option value="Psycopath">Psycopath</option>
+                        <option value="Blacksmith">Blacksmith</option>
+                        <!-- Add more roles as needed -->
+                    </select>
+                </div>`;
             }
 
             document.getElementById('name-inputs').innerHTML = nameInputsHtml;
@@ -142,73 +160,104 @@
             document.getElementById('name-setup').classList.remove('hidden');
         }
 
-        function assignRoles() {
+        // function assignRoles() {
+        //     const playerCount = document.getElementById('player-count').value;
+
+        //     for (let i = 0; i < playerCount; i++) {
+        //         const playerNameInput = document.getElementById(`player-name-${i}`);
+        //         const playerName = playerNameInput.value.trim() || `Player ${i + 1}`;
+        //         players.push({ name: playerName, role: '', alive: true });
+        //         votes[playerName] = null; // Initialize votes
+        //     }
+
+        //     let roleOptionsHtml = `
+        //         <div class="space-y-4">
+        //             <div class="flex items-center justify-between">
+        //                 <label class="text-gray-200 font-semibold text-lg">Number of Werewolves:</label>
+        //                 <input id="werewolf-count" type="number" min="1" max="${Math.floor(playerCount / 2)}" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        //             </div>
+        //             <div class="flex items-center justify-between">
+        //                 <label class="text-gray-200 font-semibold text-lg">Number of Seers:</label>
+        //                 <input id="seer-count" type="number" min="1" max="1" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        //             </div>
+        //             <div class="flex items-center justify-between">
+        //                 <label class="text-gray-200 font-semibold text-lg">Number of Guardians:</label>
+        //                 <input id="guardian-count" type="number" min="0" max="${Math.floor(playerCount / 2)}" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        //             </div>
+        //             <div class="flex items-center justify-between">
+        //                 <label class="text-gray-200 font-semibold text-lg">Number of Blacksmiths:</label>
+        //                 <input id="blacksmith-count" type="number" min="0" max="1" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        //             </div>
+        //             <div class="flex items-center justify-between">
+        //                 <label class="text-gray-200 font-semibold text-lg">Number of Psycopath:</label>
+        //                 <input id="psycopath-count" type="number" min="0" max="1" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        //             </div>
+        //         </div>
+        //         `;
+
+        //     document.getElementById('role-options').innerHTML = roleOptionsHtml;
+        //     document.getElementById('name-setup').classList.add('hidden');
+        //     document.getElementById('role-setup').classList.remove('hidden');
+        // }
+
+        // function startNightPhase() {
+        //     const werewolfCount = parseInt(document.getElementById('werewolf-count').value);
+        //     const seerCount = parseInt(document.getElementById('seer-count').value);
+        //     const guardianCount = parseInt(document.getElementById('guardian-count').value, 10);
+        //     const blacksmithCount = parseInt(document.getElementById('blacksmith-count').value, 10);
+        //     const psycopathCount = parseInt(document.getElementById('psycopath-count').value, 10);
+
+        //     // Assign roles randomly
+        //     const shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
+        //     for (let i = 0; i < werewolfCount; i++) {
+        //         shuffledPlayers[i].role = 'Werewolf';
+        //     }
+        //     for (let i = werewolfCount; i < werewolfCount + seerCount; i++) {
+        //         shuffledPlayers[i].role = 'Seer';
+        //     }
+        //     for (let i = werewolfCount + seerCount; i < werewolfCount + seerCount + guardianCount; i++) {
+        //         shuffledPlayers[i].role = 'Guardian';
+        //     }
+        //     for (let i = werewolfCount + seerCount + guardianCount; i < werewolfCount + seerCount + guardianCount + blacksmithCount; i++) {
+        //         shuffledPlayers[i].role = 'Blacksmith';
+        //     }
+        //     for (let i = werewolfCount + seerCount + guardianCount + blacksmithCount; i < werewolfCount + seerCount + guardianCount + blacksmithCount + psycopathCount; i++) {
+        //         shuffledPlayers[i].role = 'Psycopath';
+        //     }
+        //     shuffledPlayers.slice(werewolfCount + seerCount + guardianCount + blacksmithCount + psycopathCount).forEach(player => player.role = 'Villager');
+
+        //     // Update player status UI
+        //     updatePlayerStatus();
+
+        //     document.getElementById('role-setup').classList.add('hidden');
+        //     document.getElementById('night-phase').classList.remove('hidden');
+        //     showNightActivity();
+        // }
+
+        function startNightPhase() {
+            console.log('startNightPhase :>> ', true);
+            // Assume 'players' is an array of objects with 'name' and 'role' properties
             const playerCount = document.getElementById('player-count').value;
 
             for (let i = 0; i < playerCount; i++) {
                 const playerNameInput = document.getElementById(`player-name-${i}`);
+                const playerRole = document.getElementById(`player-role-${i}`);
                 const playerName = playerNameInput.value.trim() || `Player ${i + 1}`;
-                players.push({ name: playerName, role: '', alive: true });
+                players.push({ name: playerName, role: playerRole.value, alive: true });
                 votes[playerName] = null; // Initialize votes
             }
-
-            let roleOptionsHtml = `
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <label class="text-gray-200 font-semibold text-lg">Number of Werewolves:</label>
-                        <input id="werewolf-count" type="number" min="1" max="${Math.floor(playerCount / 2)}" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <label class="text-gray-200 font-semibold text-lg">Number of Seers:</label>
-                        <input id="seer-count" type="number" min="1" max="1" value="1" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <label class="text-gray-200 font-semibold text-lg">Number of Guardians:</label>
-                        <input id="guardian-count" type="number" min="0" max="${Math.floor(playerCount / 2)}" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <label class="text-gray-200 font-semibold text-lg">Number of Blacksmiths:</label>
-                        <input id="blacksmith-count" type="number" min="0" max="1" value="0" class="text-black rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-                `;
-
-            document.getElementById('role-options').innerHTML = roleOptionsHtml;
-            document.getElementById('name-setup').classList.add('hidden');
-            document.getElementById('role-setup').classList.remove('hidden');
-        }
-
-        function startNightPhase() {
-            const werewolfCount = parseInt(document.getElementById('werewolf-count').value);
-            const seerCount = parseInt(document.getElementById('seer-count').value);
-            const guardianCount = parseInt(document.getElementById('guardian-count').value, 10);
-            const blacksmithCount = parseInt(document.getElementById('blacksmith-count').value, 10);
-
-            // Assign roles randomly
-            const shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
-            for (let i = 0; i < werewolfCount; i++) {
-                shuffledPlayers[i].role = 'Werewolf';
-            }
-            for (let i = werewolfCount; i < werewolfCount + seerCount; i++) {
-                shuffledPlayers[i].role = 'Seer';
-            }
-            for (let i = werewolfCount + seerCount; i < werewolfCount + seerCount + guardianCount; i++) {
-                shuffledPlayers[i].role = 'Guardian';
-            }
-            for (let i = werewolfCount + seerCount + guardianCount; i < werewolfCount + seerCount + guardianCount + blacksmithCount; i++) {
-                shuffledPlayers[i].role = 'Blacksmith';
-            }
-            shuffledPlayers.slice(werewolfCount + seerCount + guardianCount + blacksmithCount).forEach(player => player.role = 'Villager');
 
             // Update player status UI
             updatePlayerStatus();
 
-            document.getElementById('role-setup').classList.add('hidden');
+            // Hide role setup and start the night phase
+            document.getElementById('name-setup').classList.add('hidden');
             document.getElementById('night-phase').classList.remove('hidden');
             showNightActivity();
         }
 
         function updatePlayerStatus() {
+            console.log('updatePlayerStatus :>> ', true);
             let statusListHtml = '';
             players.forEach(player => {
                 statusListHtml += `
@@ -220,10 +269,12 @@
         }
 
         function showNightActivity() {
+            console.log('showNightActivity :>> ', true);
             const werewolfAction = document.getElementById('werewolf-action');
             const seerAction = document.getElementById('seer-action');
             const guardianAction = document.getElementById('guardian-action');
             const blacksmithAction = document.getElementById('blacksmith-action');
+            const psycopathAction = document.getElementById('psycopath-action');
 
             if (players.some(player => player.role === 'Werewolf' && player.alive)) {
                 let victimOptionsHtml = '';
@@ -267,6 +318,17 @@
             if (players.some(player => player.role === 'Blacksmith' && player.alive && !blacksmithUsedPower)) {
                 blacksmithAction.classList.remove('hidden');
             }
+
+            if (players.some(player => player.role === 'Psycopath' && player.alive)) {
+                let victimOptionsHtml = '';
+                players.forEach(player => {
+                    if (player.alive === true && player.role !== 'Psycopath') {
+                        victimOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+                document.getElementById('psycopath-victim-select').innerHTML = victimOptionsHtml;
+                psycopathAction.classList.remove('hidden');
+            }
         }
 
         function revealRole() {
@@ -287,6 +349,9 @@
         function endNightPhase() {
             const victimName = document.getElementById('victim-select').value;
             const victim = players.find(player => player.name === victimName);
+            const pVictimName = document.getElementById('psycopath-victim-select').value;
+            const pVictim = players.find(player => player.name === pVictimName);
+            const psycopath = players.find(player => player.role === "Psycopath");
             const guardianProtection = document.getElementById('guardian-select').value;
 
             // Check if Blacksmith use his ability
@@ -302,6 +367,18 @@
                 if (victim) victim.alive = false;
                 stories.push(`${victimName}, was attacked by the Werewolves.`);
                 console.log(`Werewolves killed ${victimName}.`);
+            }
+
+            if (psycopath) {
+                if (guardianProtection === victimName) {
+                    psycopath.alive = false;
+                    stories.push(`The Guardian protected ${victimName}, who was attacked by the Psycopath.`);
+                    console.log(`Psycopath killed.`);
+                } else {
+                    if (pVictim) pVictim.alive = false;
+                    stories.push(`${pVictimName}, was attacked by the Psycopath.`);
+                    console.log(`Psycopath killed ${victimName}.`);
+                }
             }
 
             // Update player status UI
@@ -336,7 +413,6 @@
 
             voteOptionsHtml += `</select>`;
 
-
             document.getElementById('vote-options').innerHTML = voteOptionsHtml;
         }
 
@@ -370,11 +446,7 @@
         function displayStories() {
             let storiesHtml = '';
             stories.forEach((story, index) => {
-                if (index % 2 == 0) {
-                    storiesHtml += `<p class="text-white text-sm">Night ${Math.ceil((index + 1) / 2)}: ${story}</p>`;
-                } else {
-                    storiesHtml += `<p class="text-white text-sm">Day ${Math.ceil(index / 2)}: ${story}</p>`;
-                }
+                storiesHtml += `<p class="text-white text-sm">${story}</p>`;
             });
             document.getElementById('story-list').innerHTML = storiesHtml;
         }
@@ -382,11 +454,12 @@
         function isGameOver() {
             const aliveWerewolves = players.filter(player => player.role === 'Werewolf' && player.alive).length;
             const aliveVillagers = players.filter(player => player.role !== 'Werewolf' && player.alive).length;
+            const alivePsycopath = players.filter(player => player.role === 'Psycopath' && player.alive).length;
 
-            if (aliveWerewolves === 0) {
+            if (aliveWerewolves === 0 && alivePsycopath === 0) {
                 document.getElementById('game-result').textContent = 'Villagers win!';
                 return true;
-            } else if (aliveWerewolves >= aliveVillagers) {
+            } else if (aliveWerewolves + alivePsycopath >= aliveVillagers) {
                 document.getElementById('game-result').textContent = 'Werewolves win!';
                 return true;
             }

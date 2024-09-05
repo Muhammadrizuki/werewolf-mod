@@ -150,8 +150,10 @@
                         <option value="Seer">Seer</option>
                         <option value="Psycopath">Psycopath</option>
                         <option value="Blacksmith">Blacksmith</option>
-                        <!-- Add more roles as needed -->
-                    </select>
+                        <option value="Lycan">Lycan</option>
+                        <option value="Wolfman">Wolfman</option>
+                        <option value="Cupid">Cupid</option>
+x                    </select>
                 </div>`;
             }
 
@@ -334,7 +336,7 @@
         function revealRole() {
             const selectedPlayerName = document.getElementById('seer-select').value;
             const selectedPlayer = players.find(player => player.name === selectedPlayerName);
-            const isGoodSide = selectedPlayer.role !== 'Werewolf';
+            const isGoodSide = selectedPlayer.role !== 'Werewolf' && selectedPlayer.role !== 'Lycan';
             document.getElementById('seer-result').textContent =
                 `${selectedPlayer.name} is on the ${isGoodSide ? 'Good' : 'Bad'} side.`;
         }

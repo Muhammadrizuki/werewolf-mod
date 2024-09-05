@@ -78,6 +78,20 @@
                     class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
             </div>
 
+            <div id="cupid-action" class="hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Cupid, choose a couple:</h3>
+                <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                    <select id="first-couple-select"
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                    <select id="second-couple-select"
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                </div>
+                <button id="cupid-use-button" onclick="assignCouple()"
+                    class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                    Couple-kan!
+                </button>
+            </div>
+
             <button onclick="endNightPhase()"
                 class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">End
                 Night Phase</button>
@@ -125,11 +139,11 @@
     <script>
         let players = [];
         let roles = [];
-        let votes = {};
         let deadPlayers = [];
         let isGoodSideTurn = true;
         let stories = [];
-        let blacksmithUsedPower = false; // Track if the Blacksmith has used their power
+        let blacksmithUsedPower = false;
+        let cupidUsedPower = false;
 
         function setupPlayers() {
             const playerCount = parseInt(document.getElementById('player-count').value, 10);
@@ -245,8 +259,7 @@ x                    </select>
                 const playerNameInput = document.getElementById(`player-name-${i}`);
                 const playerRole = document.getElementById(`player-role-${i}`);
                 const playerName = playerNameInput.value.trim() || `Player ${i + 1}`;
-                players.push({ name: playerName, role: playerRole.value, alive: true });
-                votes[playerName] = null; // Initialize votes
+                players.push({ name: playerName, role: playerRole.value, alive: true, couple: false });
             }
 
             // Update player status UI
@@ -277,6 +290,7 @@ x                    </select>
             const guardianAction = document.getElementById('guardian-action');
             const blacksmithAction = document.getElementById('blacksmith-action');
             const psycopathAction = document.getElementById('psycopath-action');
+            const cupidAction = document.getElementById('cupid-action');
 
             if (players.some(player => player.role === 'Werewolf' && player.alive)) {
                 let victimOptionsHtml = '';
@@ -331,6 +345,20 @@ x                    </select>
                 document.getElementById('psycopath-victim-select').innerHTML = victimOptionsHtml;
                 psycopathAction.classList.remove('hidden');
             }
+
+            if (players.some(player => player.role === 'Cupid' && player.alive && !cupidUsedPower)) {
+                let coupleOptionsHtml = '';
+                players.forEach(player => {
+                    if (player.alive === true && player.role !== 'Cupid') {
+                        coupleOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+                document.getElementById('first-couple-select').innerHTML = coupleOptionsHtml;
+                document.getElementById('second-couple-select').innerHTML = coupleOptionsHtml;
+                cupidAction.classList.remove('hidden');
+            } else {
+                cupidAction.classList.add('hidden');
+            }
         }
 
         function revealRole() {
@@ -348,6 +376,35 @@ x                    </select>
             document.getElementById('blacksmith-use-button').classList.remove('hover:bg-yellow-500'); // Remove hover effect
         }
 
+        function assignCouple() {
+            const playerCount = document.getElementById('player-count').value;
+            const firstCouple = document.getElementById('first-couple-select').value;
+            const secondCouple = document.getElementById('second-couple-select').value;
+
+            let selectedPlayer = [];
+
+            players.find(player => player.name === firstCouple).couple = true;
+            players.find(player => player.name === secondCouple).couple = true;
+
+            cupidUsedPower = true;
+            document.getElementById('cupid-use-button').disabled = true; // Disable the button
+            document.getElementById('cupid-use-button').classList.add('opacity-50', 'cursor-not-allowed'); // Add styling to indicate it's disabled
+            document.getElementById('cupid-use-button').classList.remove('hover:bg-yellow-500'); // Remove hover effect
+
+        }
+
+        function checkCouple(player){
+            if (player.couple) {
+                    // Find the player's couple and mark them as not alive
+                    const couplePlayer = players.find(player => player.couple && player.alive);
+                    if (couplePlayer) {
+                        couplePlayer.alive = false;
+                    }
+                    stories.push(`${couplePlayer.name} is ${player.name} couples, so ${couplePlayer.name} die within`);
+                    console.log(`${player.name} couples, ${couplePlayer.name} die.`);
+                }
+        }
+
         function endNightPhase() {
             const victimName = document.getElementById('victim-select').value;
             const victim = players.find(player => player.name === victimName);
@@ -360,26 +417,27 @@ x                    </select>
             if (blacksmithUsedPower) {
                 stories.push(`The Blacksmith used iron dust, preventing the Werewolves from attacking tonight.`);
                 console.log(`Blacksmith use it power.`);
-            }
-            // Check if Guardian protected the victim
-            else if (guardianProtection === victimName) {
+            } else if (guardianProtection === victimName) {
+                // Check if Guardian protected the victim
                 stories.push(`The Guardian protected ${victimName}, who was attacked by the Werewolves.`);
                 console.log(`Guardian protected ${victimName}.`);
             } else {
-                if (victim) victim.alive = false;
+                victim.alive = false;
                 stories.push(`${victimName}, was attacked by the Werewolves.`);
                 console.log(`Werewolves killed ${victimName}.`);
+                checkCouple(victim)
             }
 
             if (psycopath) {
-                if (guardianProtection === victimName) {
+                if (guardianProtection === pVictimName) {
                     psycopath.alive = false;
-                    stories.push(`The Guardian protected ${victimName}, who was attacked by the Psycopath.`);
+                    stories.push(`The Guardian protected ${pVictimName}, who was attacked by the Psycopath.`);
                     console.log(`Psycopath killed.`);
                 } else {
-                    if (pVictim) pVictim.alive = false;
+                    pVictim.alive = false;
                     stories.push(`${pVictimName}, was attacked by the Psycopath.`);
-                    console.log(`Psycopath killed ${victimName}.`);
+                    console.log(`Psycopath killed ${pVictimName}.`);
+                    checkCouple(pVictim)
                 }
             }
 
@@ -429,6 +487,7 @@ x                    </select>
                     stories.push(`${votedPlayer} was voted out by the villagers.`);
                     console.log(`${player.name} has been eliminated.`);
                 }
+                checkCouple(player)
             } else {
                 stories.push(`No one die because of the voted Skipped`);
                 console.log(`Vote skipped`);

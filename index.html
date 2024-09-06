@@ -44,7 +44,12 @@
             <div id="werewolf-action" class="hidden">
                 <h3 class="text-xl font-medium mb-2 text-gray-200">Werewolf, choose a victim:</h3>
                 <select id="victim-select"
-                    class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                    class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-2"></select>
+                <div id="little-girl-action" class="hidden">
+                    <h3 class="text-xl font-medium mb-2 text-gray-200">Werewolf, choose a Little Girl:</h3>
+                    <select id="little-girl-select"
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                </div>
             </div>
 
             <div id="seer-action" class="hidden">
@@ -80,11 +85,11 @@
 
             <div id="cupid-action" class="hidden">
                 <h3 class="text-xl font-medium mb-2 text-gray-200">Cupid, choose a couple:</h3>
-                <div class="flex flex-col sm:flex-row gap-2">
+                <div class="flex flex-col sm:flex-row gap-2 mb-2">
                     <select id="first-couple-select"
-                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600"></select>
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
                     <select id="second-couple-select"
-                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600"></select>
+                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
                 </div>
                 <button id="cupid-use-button" onclick="assignCouple()"
                     class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
@@ -103,13 +108,13 @@
             <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Day Phase</h2>
             <div id="vote-options" class="space-y-2 mb-4"></div>
             <div id="witch-menu" class="space-y-2 mb-4 hidden">
-                <h3 class="text-xl font-medium mb-2 text-gray-200">Witch, use your power:</h3>
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Witch, use your power?</h3>
                 <div id="witch-action" class="flex flex-row gap-2 mb-2">
-                    <button id="cupid-use-button" onclick="witchShowMenu('Kill')"
+                    <button onclick="witchShowMenu('Kill')"
                         class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
                         Kill
                     </button>
-                    <button id="cupid-use-button" onclick="witchShowMenu('Revive')"
+                    <button onclick="witchShowMenu('Revive')"
                         class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
                         Revive
                     </button>
@@ -182,6 +187,7 @@
                         <option value="Wolfman">Wolfman</option>
                         <option value="Cupid">Cupid</option>
                         <option value="Witch">Witch</option>
+                        <option value="Little Girl">Little Girl</option>
 x                    </select>
                 </div>`;
             }
@@ -306,16 +312,24 @@ x                    </select>
             const blacksmithAction = document.getElementById('blacksmith-action');
             const psycopathAction = document.getElementById('psycopath-action');
             const cupidAction = document.getElementById('cupid-action');
+            const littleGirlAction = document.getElementById('little-girl-action');
 
-            if (players.some(player => player.role === 'Werewolf' && player.alive)) {
+            if (players.some(player => (player.role === 'Werewolf' || player.role === 'Wolfman') && player.alive)){
                 let victimOptionsHtml = '';
                 players.forEach(player => {
-                    if (player.alive === true && player.role !== 'Werewolf') {
+                    if (player.alive === true && player.role !== 'Werewolf' && player.role !== 'Wolfman') {
                         victimOptionsHtml += `<option value="${player.name}">${player.name}</option>`;
                     }
                 });
                 document.getElementById('victim-select').innerHTML = victimOptionsHtml;
+                if (players.some(player => player.role === 'Little Girl')) {
+                    document.getElementById('little-girl-select').innerHTML = victimOptionsHtml;
+                    littleGirlAction.classList.remove('hidden')
+                }
                 werewolfAction.classList.remove('hidden');
+            } else {
+                document.getElementById('victim-select').classList.add('hidden');
+                document.getElementById('little-girl-select').classList.add('hidden');
             }
 
             if (players.some(player => player.role === 'Seer' && player.alive)) {
@@ -348,6 +362,9 @@ x                    </select>
 
             if (players.some(player => player.role === 'Blacksmith' && player.alive && !blacksmithUsedPower)) {
                 blacksmithAction.classList.remove('hidden');
+            } else {
+                document.getElementById('blacksmith-use-button').classList.add('hidden');
+
             }
 
             if (players.some(player => player.role === 'Psycopath' && player.alive)) {
@@ -359,6 +376,8 @@ x                    </select>
                 });
                 document.getElementById('psycopath-victim-select').innerHTML = victimOptionsHtml;
                 psycopathAction.classList.remove('hidden');
+            } else {
+                document.getElementById('psycopath-victim-select').classList.add('hidden');
             }
 
             if (players.some(player => player.role === 'Cupid' && player.alive && !cupidUsedPower)) {
@@ -425,7 +444,7 @@ x                    </select>
                 <select id="witch-select" class="w-full text-black rounded p-2 w-1/2">
             `;
 
-            if(a === 'Kill'){
+            if (a === 'Kill') {
                 players.forEach(player => {
                     if (player.alive === true && player.role !== 'Witch') {
                         nameListHtml += `<option value="${player.name}">${player.name}</option>`;
@@ -455,6 +474,8 @@ x                    </select>
             const player = players.find(player => player.name === playerName);
 
             player.alive = !player.alive
+            stories.push(`Witch use the power! ${player.name}, was Revived/Killed.`);
+
             updatePlayerStatus();
             witchUsedPower = true;
             document.getElementById('witch-menu').classList.add('hidden');
@@ -466,24 +487,37 @@ x                    </select>
             const pVictimName = document.getElementById('psycopath-victim-select').value;
             const pVictim = players.find(player => player.name === pVictimName);
             const psycopath = players.find(player => player.role === "Psycopath");
+            const werewolf = players.find(player => player.role === "Werewolf");
+            const wolfman = players.find(player => player.role === "Wolfman");
             const guardianProtection = document.getElementById('guardian-select').value;
+            const werewolfGuessName = document.getElementById('little-girl-select').value;
+            const littleGirl = players.find(player => player.role === "Little Girl");
 
             // Check if Blacksmith use his ability
-            if (blacksmithUsedPower) {
-                stories.push(`The Blacksmith used iron dust, preventing the Werewolves from attacking tonight.`);
-                console.log(`Blacksmith use it power.`);
-            } else if (guardianProtection === victimName) {
-                // Check if Guardian protected the victim
-                stories.push(`The Guardian protected ${victimName}, who was attacked by the Werewolves.`);
-                console.log(`Guardian protected ${victimName}.`);
-            } else {
-                victim.alive = false;
-                stories.push(`${victimName}, was attacked by the Werewolves.`);
-                console.log(`Werewolves killed ${victimName}.`);
-                checkCouple(victim)
+            if(werewolf.alive || wolfman.alive){
+                if (blacksmithUsedPower) {
+                    stories.push(`The Blacksmith used iron dust, preventing the Werewolves from attacking tonight.`);
+                    console.log(`Blacksmith use it power.`);
+                } else if (guardianProtection === victimName) {
+                    // Check if Guardian protected the victim
+                    stories.push(`The Guardian protected ${victimName}, who was attacked by the Werewolves.`);
+                    console.log(`Guardian protected ${victimName}.`);
+                } else {
+                    victim.alive = false;
+                    stories.push(`${victimName}, was attacked by the Werewolves.`);
+                    console.log(`Werewolves killed ${victimName}.`);
+                    checkCouple(victim)
+                }
+
+                if(littleGirl){
+                    if(littleGirl.name === werewolfGuessName){
+                        littleGirl.alive = false;
+                        stories.push(`${littleGirl.name}, was caught peeping in the night.`);
+                    }
+                }
             }
 
-            if (psycopath) {
+            if (psycopath && psycopath.alive) {
                 if (guardianProtection === pVictimName) {
                     psycopath.alive = false;
                     stories.push(`The Guardian protected ${pVictimName}, who was attacked by the Psycopath.`);
@@ -533,7 +567,7 @@ x                    </select>
 
             if (players.some(player => player.role === 'Witch' && player.alive && !witchUsedPower)) {
                 witchMenu.classList.remove('hidden');
-            } else if (players.some(player => player.role === 'Witch' && !player.alive)){
+            } else if (players.some(player => player.role === 'Witch' && !player.alive)) {
                 witchMenu.classList.remove('hidden');
                 witchAction.classList.add('hidden');
             }
@@ -579,10 +613,11 @@ x                    </select>
 
         function isGameOver() {
             const aliveWerewolves = players.filter(player => player.role === 'Werewolf' && player.alive).length;
+            const aliveWolfman = players.filter(player => player.role === 'Wolfman' && player.alive).length;
             const aliveVillagers = players.filter(player => player.role !== 'Werewolf' && player.alive).length;
             const alivePsycopath = players.filter(player => player.role === 'Psycopath' && player.alive).length;
 
-            if (aliveWerewolves === 0 && alivePsycopath === 0) {
+            if (aliveWerewolves === 0 && alivePsycopath === 0 && aliveWolfman === 0) {
                 document.getElementById('game-result').textContent = 'Villagers win!';
                 return true;
             } else if (aliveWerewolves + alivePsycopath >= aliveVillagers) {

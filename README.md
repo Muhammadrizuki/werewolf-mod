@@ -7,3 +7,4 @@
  6. Wolfman
  7. Cupid 
  8. Witch
+ 9. Little Girl

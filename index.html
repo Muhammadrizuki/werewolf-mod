@@ -80,11 +80,11 @@
 
             <div id="cupid-action" class="hidden">
                 <h3 class="text-xl font-medium mb-2 text-gray-200">Cupid, choose a couple:</h3>
-                <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                <div class="flex flex-col sm:flex-row gap-2">
                     <select id="first-couple-select"
-                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600"></select>
                     <select id="second-couple-select"
-                        class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></select>
+                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600"></select>
                 </div>
                 <button id="cupid-use-button" onclick="assignCouple()"
                     class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
@@ -102,6 +102,19 @@
         <div id="day-phase" class="text-center hidden">
             <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Day Phase</h2>
             <div id="vote-options" class="space-y-2 mb-4"></div>
+            <div id="witch-menu" class="space-y-2 mb-4 hidden">
+                <h3 class="text-xl font-medium mb-2 text-gray-200">Witch, use your power:</h3>
+                <div id="witch-action" class="flex flex-row gap-2 mb-2">
+                    <button id="cupid-use-button" onclick="witchShowMenu('Kill')"
+                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                        Kill
+                    </button>
+                    <button id="cupid-use-button" onclick="witchShowMenu('Revive')"
+                        class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                        Revive
+                    </button>
+                </div>
+            </div>
             <button onclick="endDayPhase()"
                 class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition">End
                 Day Phase</button>
@@ -144,6 +157,7 @@
         let stories = [];
         let blacksmithUsedPower = false;
         let cupidUsedPower = false;
+        let witchUsedPower = false;
 
         function setupPlayers() {
             const playerCount = parseInt(document.getElementById('player-count').value, 10);
@@ -167,6 +181,7 @@
                         <option value="Lycan">Lycan</option>
                         <option value="Wolfman">Wolfman</option>
                         <option value="Cupid">Cupid</option>
+                        <option value="Witch">Witch</option>
 x                    </select>
                 </div>`;
             }
@@ -364,7 +379,7 @@ x                    </select>
         function revealRole() {
             const selectedPlayerName = document.getElementById('seer-select').value;
             const selectedPlayer = players.find(player => player.name === selectedPlayerName);
-            const isGoodSide = selectedPlayer.role !== 'Werewolf' && selectedPlayer.role !== 'Lycan';
+            const isGoodSide = selectedPlayer.role !== 'Werewolf' && selectedPlayer.role !== 'Lycan' && selectedPlayer.role !== 'Cupid';
             document.getElementById('seer-result').textContent =
                 `${selectedPlayer.name} is on the ${isGoodSide ? 'Good' : 'Bad'} side.`;
         }
@@ -393,16 +408,56 @@ x                    </select>
 
         }
 
-        function checkCouple(player){
+        function checkCouple(player) {
             if (player.couple) {
-                    // Find the player's couple and mark them as not alive
-                    const couplePlayer = players.find(player => player.couple && player.alive);
-                    if (couplePlayer) {
-                        couplePlayer.alive = false;
-                    }
-                    stories.push(`${couplePlayer.name} is ${player.name} couples, so ${couplePlayer.name} die within`);
-                    console.log(`${player.name} couples, ${couplePlayer.name} die.`);
+                // Find the player's couple and mark them as not alive
+                const couplePlayer = players.find(player => player.couple && player.alive);
+                if (couplePlayer) {
+                    couplePlayer.alive = false;
                 }
+                stories.push(`${couplePlayer.name} is ${player.name} couples, so ${couplePlayer.name} die within`);
+                console.log(`${player.name} couples, ${couplePlayer.name} die.`);
+            }
+        }
+
+        function witchShowMenu(a) {
+            let nameListHtml = `
+                <select id="witch-select" class="w-full text-black rounded p-2 w-1/2">
+            `;
+
+            if(a === 'Kill'){
+                players.forEach(player => {
+                    if (player.alive === true && player.role !== 'Witch') {
+                        nameListHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+            } else {
+                players.forEach(player => {
+                    if (player.alive === false && player.role !== 'Witch') {
+                        nameListHtml += `<option value="${player.name}">${player.name}</option>`;
+                    }
+                });
+            }
+
+            nameListHtml += `
+            </select>
+            <button id="cupid-use-button" onclick="useWitchPower()"
+                class="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                ${a}
+            </button>
+            `;
+            document.getElementById('witch-action').innerHTML = nameListHtml;
+        }
+
+        function useWitchPower() {
+            console.log('useWitchPower :>> ', true);
+            const playerName = document.getElementById('witch-select').value;
+            const player = players.find(player => player.name === playerName);
+
+            player.alive = !player.alive
+            updatePlayerStatus();
+            witchUsedPower = true;
+            document.getElementById('witch-menu').classList.add('hidden');
         }
 
         function endNightPhase() {
@@ -459,6 +514,9 @@ x                    </select>
 
 
         function showDayVotingOptions() {
+            const witchMenu = document.getElementById('witch-menu');
+            const witchAction = document.getElementById('witch-action');
+
             let voteOptionsHtml = `
                 <h3 class="text-xl font-semibold">Vote to eliminate a player:</h3>
                     <select name="vote" id="vote-select" class="w-full text-gray-900 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
@@ -472,6 +530,13 @@ x                    </select>
             });
 
             voteOptionsHtml += `</select>`;
+
+            if (players.some(player => player.role === 'Witch' && player.alive && !witchUsedPower)) {
+                witchMenu.classList.remove('hidden');
+            } else if (players.some(player => player.role === 'Witch' && !player.alive)){
+                witchMenu.classList.remove('hidden');
+                witchAction.classList.add('hidden');
+            }
 
             document.getElementById('vote-options').innerHTML = voteOptionsHtml;
         }

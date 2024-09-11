@@ -494,7 +494,7 @@ x                    </select>
             const littleGirl = players.find(player => player.role === "Little Girl");
 
             // Check if Blacksmith use his ability
-            if(werewolf.alive || wolfman.alive){
+            if(werewolf.alive || wolfman && wolfman.alive){
                 if (blacksmithUsedPower) {
                     stories.push(`The Blacksmith used iron dust, preventing the Werewolves from attacking tonight.`);
                     console.log(`Blacksmith use it power.`);
@@ -567,9 +567,11 @@ x                    </select>
 
             if (players.some(player => player.role === 'Witch' && player.alive && !witchUsedPower)) {
                 witchMenu.classList.remove('hidden');
-            } else if (players.some(player => player.role === 'Witch' && !player.alive)) {
+            } else if (players.some(player => player.role === 'Witch' && !player.alive && !witchUsedPower)) {
                 witchMenu.classList.remove('hidden');
                 witchAction.classList.add('hidden');
+            } else {
+                witchMenu.classList.add('hidden');
             }
 
             document.getElementById('vote-options').innerHTML = voteOptionsHtml;
@@ -614,14 +616,14 @@ x                    </select>
         function isGameOver() {
             const aliveWerewolves = players.filter(player => player.role === 'Werewolf' && player.alive).length;
             const aliveWolfman = players.filter(player => player.role === 'Wolfman' && player.alive).length;
-            const aliveVillagers = players.filter(player => player.role !== 'Werewolf' && player.alive).length;
+            const aliveVillagers = players.filter(player => !['Werewolf', 'Wolfman', 'Psycopath', 'Cupid'].includes(player.role) && player.alive).length;
             const alivePsycopath = players.filter(player => player.role === 'Psycopath' && player.alive).length;
 
             if (aliveWerewolves === 0 && alivePsycopath === 0 && aliveWolfman === 0) {
-                document.getElementById('game-result').textContent = 'Villagers win!';
+                document.getElementById('game-result').textContent = 'Good side win!';
                 return true;
             } else if (aliveWerewolves + alivePsycopath >= aliveVillagers) {
-                document.getElementById('game-result').textContent = 'Werewolves win!';
+                document.getElementById('game-result').textContent = 'Bad side win!';
                 return true;
             }
 
